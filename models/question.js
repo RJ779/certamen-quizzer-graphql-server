@@ -1,43 +1,43 @@
 const Mongoose = require("mongoose")
 
 const QuestionSchema = new Mongoose.Schema({
-    Source: {  
+    source: {  
         type: String,
         required: true 
     }, 
-    Difficulty: {  
+    difficulty: {  
         type: String,
         required: true 
     }, 
-    Round: {  
+    round: {  
         type: String,
         required: true 
     }, 
-    ID: {  
+    id: {  
         type: String,
         required: true 
     }, 
-    MainQuestion: {  
+    mainQuestion: {  
         type: String,
         required: true 
     }, 
-    MainAnswer: {  
+    mainAnswer: {  
         type: String,
         required: true 
     }, 
-    FirstFollowUpQuestion: {  
+    firstFollowUpQuestion: {  
         type: String,
         required: true 
     }, 
-    FirstFollowUpAnswer: {  
+    firstFollowUpAnswer: {  
         type: String,
         required: true 
     }, 
-    SecondFollowUpQuestion: {  
+    secondFollowUpQuestion: {  
         type: String,
         required: true 
     }, 
-    SecondFollowUpAnswer: {  
+    secondFollowUpAnswer: {  
         type: String,
         required: true 
     }, 

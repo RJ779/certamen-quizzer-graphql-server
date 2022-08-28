@@ -1,31 +1,17 @@
 {
-  "name": "certamen-quizzer-graphql-server",
+  "name": "graphql-tutorial-last-one",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon server.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/sashavining/certamen-quizzer-graphql-server.git"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/sashavining/certamen-quizzer-graphql-server/issues"
-  },
-  "homepage": "https://github.com/sashavining/certamen-quizzer-graphql-server#readme",
   "dependencies": {
+    "apollo-server": "^3.10.2",
     "dotenv": "^16.0.1",
-    "express": "^4.18.1",
-    "express-graphql": "^0.12.0",
-    "graphql": "^15.8.0",
-    "mongoose": "^6.5.2"
-
-  },
-  "devDependencies": {
-    "nodemon": "^2.0.19"
+    "graphql": "^16.6.0",
+    "mongoose": "^6.5.3"
   }
 }
