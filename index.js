@@ -7,6 +7,8 @@ if (process.env.NODE_ENV !== 'production') {
 const Question = require('./models/question.js')
 const URI = process.env.MONGODB_CONNECTION_STRING
 
+
+
 const typeDefs = gql`
 type Question {
     id: ID!
@@ -30,12 +32,17 @@ type Question {
     secondFollowUpAnswer: String!
 }
 
+
   type Query {
     questionCount: Int!
     allQuestions: [Question!]!
-    findQuestionsByDifficulty(difficulty: String!): [Question!]!
+    twentyQuestions: [Question!]!
+    twentyQuestionsBySourceOrDifficulty(source: String, difficulty: String): [Question!]!
   }
 `
+
+// to do: add enum for difficulties 
+
 mongoose.connect(URI)
   .then(() => {
     console.log('connected to MongoDB')
@@ -44,14 +51,27 @@ mongoose.connect(URI)
     console.log('error connection to MongoDB:', error.message)
   })
 
+
   const resolvers = {
     Query: {
       questionCount: async () => await Question.countDocuments({}),
       allQuestions: async () =>  {
         return Question.find({})
       },
-      findQuestionsByDifficulty: async (root, args) =>
-        Question.find({difficulty: args.difficulty}).exec()
+      twentyQuestions: async () =>  {
+        return Question.aggregate([{ $sample: { size: 20 } }])
+      },
+      twentyQuestionsBySourceOrDifficulty: async (root, args) => {
+        if (args.difficulty && args.source) {
+          return Question.find({difficulty: args.difficulty, source: args.source}).limit(20).exec()
+        } else if (args.difficulty) {
+          return Question.aggregate([{$match: {difficulty: args.difficulty}}, { $sample: { size: 20 } }])
+        } else if (args.source) {
+          return Question.find({source: args.source}).limit(20).exec()
+        } else {
+          return []
+        }
+      }
     }
   }
   
