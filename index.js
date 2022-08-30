@@ -38,6 +38,8 @@ type Question {
     allQuestions: [Question!]!
     twentyQuestions: [Question!]!
     twentyQuestionsBySourceOrDifficulty(source: String, difficulty: String): [Question!]!
+    uniqueSources: [String!]!
+    uniqueDifficulties: [String!]!
   }
 `
 
@@ -71,7 +73,13 @@ mongoose.connect(URI)
         } else {
           return []
         }
-      }
+      },
+      uniqueSources: async () => {
+        return Question.distinct("source")
+      },
+      uniqueDifficulties: async () => {
+        return Question.distinct("difficulty")
+      },
     }
   }
   
