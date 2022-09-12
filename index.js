@@ -30,14 +30,17 @@ type Question {
     secondFollowUpQuestion: String!
     "The answer to the first follow up question"
     secondFollowUpAnswer: String!
+    "Multiple choice answers, optional"
+    MCAnswers: [String]
 }
-
 
   type Query {
     questionCount: Int!
     allQuestions: [Question!]!
     twentyQuestions: [Question!]!
     twentyQuestionsBySourceOrDifficulty(source: String, difficulty: String): [Question!]!
+    twentyMCQuestionsBySourceOrDifficulty(source: String, difficulty: String): [Question!]!
+    getMultipleChoiceAnswers: [String!]!
     uniqueSources: [String!]!
     uniqueDifficulties: [String!]!
   }
@@ -70,6 +73,38 @@ mongoose.connect(URI)
           return Question.aggregate([{$match: {difficulty: args.difficulty}}, { $sample: { size: 20 } }])
         } else if (args.source) {
           return Question.find({source: args.source}).limit(20).exec()
+        } else {
+          return []
+        }
+      },
+      // getMultipleChoiceAnswers: async () => {
+      //   return answers
+      // },
+      twentyMCQuestionsBySourceOrDifficulty: async (root, args) => {
+        if (args.difficulty && args.source) {
+          const questions = Question.find({difficulty: args.difficulty, source: args.source}).limit(20).exec()
+          const questionsForMC = await Question.aggregate([{ $sample: {size: 180} }])
+          const answers = questionsForMC.map((question, index) => (index < 60) ? question.mainAnswer : (index < 120) ? question.firstFollowUpAnswer : question.secondFollowUpAnswer)
+         for (const question of questions) {
+          question.MCAnswers = answers.splice(0, 9)
+         }
+          return questions
+        } else if (args.difficulty) {
+          const questions = await Question.aggregate([{$match: {difficulty: args.difficulty}}, { $sample: { size: 20 } }])
+          const questionsForMC = await Question.aggregate([{ $sample: {size: 180} }])
+          const answers = questionsForMC.map((question, index) => (index < 60) ? question.mainAnswer : (index < 120) ? question.firstFollowUpAnswer : question.secondFollowUpAnswer)
+         for (const question of questions) {
+          question.MCAnswers = answers.splice(0, 9)
+         }
+         return questions
+        } else if (args.source) {
+          const questions = Question.find({source: args.source}).limit(20).exec()
+          const questionsForMC = await Question.aggregate([{ $sample: {size: 180} }])
+          const answers = questionsForMC.map((question, index) => (index < 60) ? question.mainAnswer : (index < 120) ? question.firstFollowUpAnswer : question.secondFollowUpAnswer)
+         for (const question of questions) {
+          question.MCAnswers = answers.splice(0, 9)
+         }
+         return questions
         } else {
           return []
         }
