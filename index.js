@@ -4,10 +4,10 @@ if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config()
 }
 
-const Question = require('./models/question.js')
+const Question = require('./models/Question.js')
+const TimeTrialQuestion = require('./models/TimeTrialQuestion.js')
+
 const URI = process.env.MONGODB_CONNECTION_STRING
-
-
 
 const typeDefs = gql`
 type Question {
@@ -34,10 +34,27 @@ type Question {
     MCAnswers: [String]
 }
 
+type TimeTrialQuestion {
+  id: ID!
+  "The source from which the question has been drawn"
+  source: String!
+  "The category to which the question belongs"
+  category: String!
+  "The question"
+  question: String!
+  "The correct answer to the question"
+  answer: String!
+  "The soonest an answerer can be sure that they can answer the question - the optimal word to buzz in on."
+  optimalWord: String!
+  "Multiple choice answers, optional"
+  MCAnswers: [String]
+}
+
   type Query {
     questionCount: Int!
     allQuestions: [Question!]!
     twentyQuestions: [Question!]!
+    twentyTimeTrialQuestionsByTopic(topic: String): [TimeTrialQuestion!]!
     twentyQuestionsBySourceOrDifficulty(source: String, difficulty: String): [Question!]!
     twentyMCQuestionsBySourceOrDifficulty(source: String, difficulty: String): [Question!]!
     getMultipleChoiceAnswers: [String!]!
@@ -77,19 +94,17 @@ mongoose.connect(URI)
           return []
         }
       },
-      // getMultipleChoiceAnswers: async () => {
-      //   return answers
-      // },
       twentyMCQuestionsBySourceOrDifficulty: async (root, args) => {
         if (args.difficulty && args.source) {
-          const questions = Question.find({difficulty: args.difficulty, source: args.source}).limit(20).exec()
+          const questions = await Question.find({difficulty: args.difficulty, source: args.source}).limit(20).exec()
           const questionsForMC = await Question.aggregate([{ $sample: {size: 180} }])
           const answers = questionsForMC.map((question, index) => (index < 60) ? question.mainAnswer : (index < 120) ? question.firstFollowUpAnswer : question.secondFollowUpAnswer)
-         for (const question of questions) {
-          question.MCAnswers = answers.splice(0, 9)
-         }
-          return questions
-        } else if (args.difficulty) {
+          for (const question of questions) {
+            question["MCAnswers"] = answers.splice(0, 9)
+           }
+           return questions
+
+          } else if (args.difficulty) {
           const questions = await Question.aggregate([{$match: {difficulty: args.difficulty}}, { $sample: { size: 20 } }])
           const questionsForMC = await Question.aggregate([{ $sample: {size: 180} }])
           const answers = questionsForMC.map((question, index) => (index < 60) ? question.mainAnswer : (index < 120) ? question.firstFollowUpAnswer : question.secondFollowUpAnswer)
@@ -98,7 +113,7 @@ mongoose.connect(URI)
          }
          return questions
         } else if (args.source) {
-          const questions = Question.find({source: args.source}).limit(20).exec()
+          const questions = await Question.find({source: args.source}).limit(20).exec()
           const questionsForMC = await Question.aggregate([{ $sample: {size: 180} }])
           const answers = questionsForMC.map((question, index) => (index < 60) ? question.mainAnswer : (index < 120) ? question.firstFollowUpAnswer : question.secondFollowUpAnswer)
          for (const question of questions) {
@@ -108,6 +123,15 @@ mongoose.connect(URI)
         } else {
           return []
         }
+      },
+      twentyTimeTrialQuestionsByTopic: async (root, args) => {
+          const questions = await TimeTrialQuestion.find({topic: args.topic}).limit(20).exec()
+          const questionsForMC = await TimeTrialQuestion.aggregate([{ $sample: {size: 60} }])
+          const answers = questionsForMC.map(question => question.answer)
+          for (const question of questions) {
+            question["MCAnswers"] = answers.splice(0, 3)
+           }
+          return questions
       },
       uniqueSources: async () => {
         return Question.distinct("source")
