@@ -54,7 +54,7 @@ type TimeTrialQuestion {
     questionCount: Int!
     allQuestions: [Question!]!
     twentyQuestions: [Question!]!
-    twentyTimeTrialQuestionsByTopic(topic: String): [TimeTrialQuestion!]!
+    twentyTimeTrialQuestionsByCategory(category: String): [TimeTrialQuestion!]!
     twentyQuestionsBySourceOrDifficulty(source: String, difficulty: String): [Question!]!
     twentyMCQuestionsBySourceOrDifficulty(source: String, difficulty: String): [Question!]!
     getMultipleChoiceAnswers: [String!]!
@@ -124,8 +124,8 @@ mongoose.connect(URI)
           return []
         }
       },
-      twentyTimeTrialQuestionsByTopic: async (root, args) => {
-          const questions = await TimeTrialQuestion.find({topic: args.topic}).limit(20).exec()
+      twentyTimeTrialQuestionsByCategory: async (root, args) => {
+          const questions = await TimeTrialQuestion.find({category: args.category}).limit(20).exec()
           const questionsForMC = await TimeTrialQuestion.aggregate([{ $sample: {size: 60} }])
           const answers = questionsForMC.map(question => question.answer)
           for (const question of questions) {
