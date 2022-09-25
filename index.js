@@ -126,7 +126,7 @@ mongoose.connect(URI)
       },
       twentyTimeTrialQuestionsByCategory: async (root, args) => {
           const questions = await TimeTrialQuestion.find({category: args.category}).limit(20).exec()
-          const questionsForMC = await TimeTrialQuestion.aggregate([{ $sample: {size: 60} }])
+          const questionsForMC = await TimeTrialQuestion.aggregate([{ $match: { category: args.category } }, { $sample: {size: 60} }])
           const answers = questionsForMC.map(question => question.answer)
           for (const question of questions) {
             question["MCAnswers"] = answers.splice(0, 3)
