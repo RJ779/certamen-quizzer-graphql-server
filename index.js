@@ -156,6 +156,7 @@ mongoose.connect(URI)
     const server = new ApolloServer({
       typeDefs,
       resolvers,
+      cache: "bounded",
     })  
 
   server.listen({ port: process.env.PORT }).then(({ url }) => {
