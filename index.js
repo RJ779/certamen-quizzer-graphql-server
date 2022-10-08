@@ -158,7 +158,7 @@ mongoose.connect(URI)
       resolvers,
     })  
 
-  server.listen({ port: process.env.PORT || 4000 }).then(({ url }) => {
+  server.listen({ port: process.env.PORT }).then(({ url }) => {
     console.log(`🚀 Server ready at ${url}`)
   });
   
