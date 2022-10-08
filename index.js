@@ -4,8 +4,8 @@ if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config()
 }
 
-const Question = require('/models/Question.js')
-const TimeTrialQuestion = require('/models/TimeTrialQuestion.js')
+const Question = require('models/Question.js')
+const TimeTrialQuestion = require('models/TimeTrialQuestion.js')
 
 const URI = process.env.MONGODB_CONNECTION_STRING
 
