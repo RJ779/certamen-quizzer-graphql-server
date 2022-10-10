@@ -4,8 +4,23 @@ if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config()
 }
 
-const Question = require('models/Question.js')
-const TimeTrialQuestion = require('models/TimeTrialQuestion.js')
+const Question = require('./models/Question.js')
+const TimeTrialQuestion = require('./models/TimeTrialQuestion.js')
+
+function shuffle(array) {
+  var m = array.length, t, i;
+
+  while (m) {
+
+    i = Math.floor(Math.random() * m--);
+
+    t = array[m];
+    array[m] = array[i];
+    array[i] = t;
+  }
+
+  return array;
+}
 
 const URI = process.env.MONGODB_CONNECTION_STRING
 
@@ -97,27 +112,27 @@ mongoose.connect(URI)
       twentyMCQuestionsBySourceOrDifficulty: async (root, args) => {
         if (args.difficulty && args.source) {
           const questions = await Question.aggregate([{ $match: { difficulty: args.difficulty, source: args.source } }, { $sample: {size: 20} }])
-          const questionsForMC = await Question.aggregate([{ $sample: {size: 180} }])
-          const answers = questionsForMC.map((question, index) => (index < 60) ? question.mainAnswer : (index < 120) ? question.firstFollowUpAnswer : question.secondFollowUpAnswer)
-          for (const question of questions) {
-            question["MCAnswers"] = answers.splice(0, 9)
-           }
+          const answers = await Question.distinct("mainAnswer")
+          const shuffledAnswers = shuffle(answers)
+         for (const question of questions) {
+          question.MCAnswers = shuffledAnswers.splice(0, 9)
+         }
            return questions
 
           } else if (args.difficulty) {
           const questions = await Question.aggregate([{ $match: { difficulty: args.difficulty } }, { $sample: {size: 20} }])
-          const questionsForMC = await Question.aggregate([{ $sample: {size: 180} }])
-          const answers = questionsForMC.map((question, index) => (index < 60) ? question.mainAnswer : (index < 120) ? question.firstFollowUpAnswer : question.secondFollowUpAnswer)
+          const answers = await Question.distinct("mainAnswer")
+          const shuffledAnswers = shuffle(answers)
          for (const question of questions) {
-          question.MCAnswers = answers.splice(0, 9)
+          question.MCAnswers = shuffledAnswers.splice(0, 9)
          }
          return questions
         } else if (args.source) {
           const questions = await Question.aggregate([{ $match: { source: args.source } }, { $sample: {size: 20} }])
-          const questionsForMC = await Question.aggregate([{ $sample: {size: 180} }])
-          const answers = questionsForMC.map((question, index) => (index < 60) ? question.mainAnswer : (index < 120) ? question.firstFollowUpAnswer : question.secondFollowUpAnswer)
+          const answers = await Question.distinct("mainAnswer")
+          const shuffledAnswers = shuffle(answers)
          for (const question of questions) {
-          question.MCAnswers = answers.splice(0, 9)
+          question.MCAnswers = shuffledAnswers.splice(0, 9)
          }
          return questions
         } else {
